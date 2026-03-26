@@ -11,6 +11,12 @@ public class UserInput {
 
         System.out.println("How old are you?");
         int age = input.nextInt();
+
+        int currentYear = 2026;
+        int birthYear = currentYear - age; 
+
+        System.out.println("That means you were born in " + birthYear + "!");
+
         input.nextLine(); //<_____
         System.out.println("where do you live?");
         String live = input.nextLine();
