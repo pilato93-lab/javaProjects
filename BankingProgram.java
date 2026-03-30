@@ -1,43 +1,45 @@
 import java.util.Scanner;
+import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class BankingProgram {
+
+    private static final String FILE_NAME = "transactions.txt";
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         
         // --- SECTION 1: SECURITY GATE ---
-        int storedPin = 7443; 
-        int enteredPin;
-        boolean accessGranted = false;
-
+        int storedPin = 7443;
         System.out.println("=== PILATO BANK SECURE LOGIN ===");
+        System.out.print("Please enter your 4-digit PIN: ");
         
-        while (!accessGranted) {
-            System.out.print("Please enter your 4-digit PIN to begin: ");
-            enteredPin = scanner.nextInt();
-
-            if (enteredPin == storedPin) {
-                accessGranted = true;
-                System.out.println("\nAccess Granted. Welcome back!");
-            } else {
-                System.out.println("Incorrect PIN. Please try again.");
-            }
+        // Basic error handling for non-numeric PIN entry
+        if (!scanner.hasNextInt()) {
+            System.out.println("Invalid input. PIN must be numbers only.");
+            return;
         }
 
-        // --- SECTION 2: THE BANKING PROGRAM (Unlocked) ---
-        double balance = 0.00;
-        int choice;
+        if (scanner.nextInt() != storedPin) {
+            System.out.println("Access Denied. Incorrect PIN.");
+            return;
+        }
 
+        // --- SECTION 2: LOAD DATA & RECALCULATE ---
+        double balance = loadBalanceFromFile();
+        System.out.println("\nAccess Granted. Welcome back!");
+        System.out.println("Current Account Balance: R" + balance);
+
+        int choice;
         do {
-            System.out.println(" ");
-            System.out.println("BANKING PROGRAM");
-            System.out.println(" ");
-            System.out.println("1. Show Balance");
-            System.out.println("2. Deposit");
-            System.out.println("3. Withdraw");
-            System.out.println("4. Exit");
-            System.out.println(" ");
-            System.out.print("Enter your choice: ");
+            System.out.println("\n--- MAIN BANKING MENU ---");
+            System.out.println("1. Check Balance");
+            System.out.println("2. Deposit Funds");
+            System.out.println("3. Withdraw Funds");
+            System.out.println("4. View Transaction History");
+            System.out.println("5. Exit");
+            System.out.print("Select an option: ");
             
             choice = scanner.nextInt();
 
@@ -46,30 +48,92 @@ public class BankingProgram {
                     System.out.println("Your current balance is: R" + balance);
                     break;
                 case 2:
-                    System.out.print("Enter amount to deposit: R");
-                    double depositAmount = scanner.nextDouble();
-                    balance += depositAmount;
-                    System.out.println("Successfully deposited R" + depositAmount);
+                    System.out.print("Enter deposit amount: R");
+                    double dep = scanner.nextDouble();
+                    if (dep > 0) {
+                        balance += dep;
+                        saveTransaction("DEPOSIT: R" + dep);
+                        System.out.println("R" + dep + " has been added to your account.");
+                    } else {
+                        System.out.println("Invalid amount.");
+                    }
                     break;
                 case 3:
-                    System.out.print("Enter amount to withdraw: R");
-                    double withdrawAmount = scanner.nextDouble();
-                    if (withdrawAmount > balance) {
-                        System.out.println("Insufficient funds! Your balance is R" + balance);
+                    System.out.print("Enter withdrawal amount: R");
+                    double with = scanner.nextDouble();
+                    if (with > 0 && with <= balance) {
+                        balance -= with;
+                        saveTransaction("WITHDRAW: R" + with);
+                        System.out.println("Please take your R" + with);
                     } else {
-                        balance -= withdrawAmount;
-                        System.out.println("Successfully withdrew R" + withdrawAmount);
+                        System.out.println("Transaction failed: Insufficient funds or invalid amount.");
                     }
                     break;
                 case 4:
-                    System.out.println("Thank you for using Pilato Banking. Goodbye!");
+                    printHistory();
+                    break;
+                case 5:
+                    System.out.println("Thank you for banking with Pilato Bank. Goodbye!");
                     break;
                 default:
-                    System.out.println("Invalid choice. Please pick 1, 2, 3, or 4.");
+                    System.out.println("Invalid selection. Try again.");
             }
-
-        } while (choice != 4);
+        } while (choice != 5);
 
         scanner.close();
+    }
+
+    
+    public static void saveTransaction(String text) {
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        String timestamp = now.format(formatter);
+
+        try (PrintWriter out = new PrintWriter(new FileWriter(FILE_NAME, true))) {
+            out.println(timestamp + " - " + text);
+        } catch (IOException e) {
+            System.out.println("System Error: Could not log transaction.");
+        }
+    }
+
+    
+    public static double loadBalanceFromFile() {
+        double calcBalance = 0;
+        File file = new File(FILE_NAME);
+        if (!file.exists()) return 0.0;
+
+        try (Scanner fileScanner = new Scanner(file)) {
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+                if (line.contains("R")) {
+                    
+                    String[] parts = line.split("R");
+                    double amount = Double.parseDouble(parts[1].trim());
+                    
+                    if (line.contains("DEPOSIT")) calcBalance += amount;
+                    if (line.contains("WITHDRAW")) calcBalance -= amount;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Note: Starting with fresh session (History file empty or corrupted).");
+        }
+        return calcBalance;
+    }
+
+    public static void printHistory() {
+        System.out.println("\n--- PERMANENT TRANSACTION LOG ---");
+        File file = new File(FILE_NAME);
+        if (!file.exists()) {
+            System.out.println("No records found.");
+            return;
+        }
+
+        try (Scanner fileScanner = new Scanner(file)) {
+            while (fileScanner.hasNextLine()) {
+                System.out.println(fileScanner.nextLine());
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Error: File not found.");
+        }
     }
 }
