@@ -15,7 +15,7 @@ public class Hello {
        System.out.println("Good luck " + Name + ".");
 
        System.out.println(Name.toUpperCase());
-       System.out.println(Name.toLowerCase);
+       System.out.println(Name.toLowerCase());
 
 
         }

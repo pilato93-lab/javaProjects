@@ -24,8 +24,5 @@ public class Practice {
         System.out.println(" ");
         System.out.println("your java course begins in");
 
-
-
-
     }
 }

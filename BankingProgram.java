@@ -15,7 +15,6 @@ public class BankingProgram {
         System.out.println("=== PILATO BANK SECURE LOGIN ===");
         System.out.print("Please enter your 4-digit PIN: ");
         
-        // Basic error handling for non-numeric PIN entry
         if (!scanner.hasNextInt()) {
             System.out.println("Invalid input. PIN must be numbers only.");
             return;
@@ -26,8 +25,8 @@ public class BankingProgram {
             return;
         }
 
-        // --- SECTION 2: LOAD DATA & RECALCULATE ---
-        double balance = loadBalanceFromFile();
+        double balance = loadBalanceFromFile(); 
+        
         System.out.println("\nAccess Granted. Welcome back!");
         System.out.println("Current Account Balance: R" + balance);
 
@@ -83,7 +82,6 @@ public class BankingProgram {
         scanner.close();
     }
 
-    
     public static void saveTransaction(String text) {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -96,26 +94,31 @@ public class BankingProgram {
         }
     }
 
-    
     public static double loadBalanceFromFile() {
         double calcBalance = 0;
         File file = new File(FILE_NAME);
+        
         if (!file.exists()) return 0.0;
 
         try (Scanner fileScanner = new Scanner(file)) {
             while (fileScanner.hasNextLine()) {
                 String line = fileScanner.nextLine();
+                
                 if (line.contains("R")) {
+                    // We find the VERY LAST 'R' to avoid confusion with dates
+                    int lastRIndex = line.lastIndexOf("R");
+                    String amountString = line.substring(lastRIndex + 1).trim();
+                    double amount = Double.parseDouble(amountString);
                     
-                    String[] parts = line.split("R");
-                    double amount = Double.parseDouble(parts[1].trim());
-                    
-                    if (line.contains("DEPOSIT")) calcBalance += amount;
-                    if (line.contains("WITHDRAW")) calcBalance -= amount;
+                    if (line.contains("DEPOSIT")) {
+                        calcBalance += amount;
+                    } else if (line.contains("WITHDRAW")) {
+                        calcBalance -= amount;
+                    }
                 }
             }
         } catch (Exception e) {
-            System.out.println("Note: Starting with fresh session (History file empty or corrupted).");
+            System.out.println("Note: History file read error. Starting fresh.");
         }
         return calcBalance;
     }
