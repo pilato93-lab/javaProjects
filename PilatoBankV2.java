@@ -1,99 +1,68 @@
 import java.util.Scanner;
+import java.io.*;
 
 public class PilatoBankV2 {
-    private static int lastAssignedNumber = 0; 
-    private static final String BRANCH_CODE = "7443";
+    private static final String BRANCH = "7443";
+    private static final String REGISTRY = "users.txt";
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        System.out.println("=== PILATO BANK V2.0 ===");
+        System.out.println("1. Login\n2. Register");
+        System.out.print("Choice: ");
+        String choice = scanner.nextLine();
 
-        System.out.println("=== PILATO BANK ONBOARDING ===");
-        
-        System.out.print("Enter name/s: ");
-        String names = capitalizeAllWords(scanner.nextLine());
-        System.out.print("Enter surname: ");
-        String surname = capitalizeAllWords(scanner.nextLine());
-        String fullName = names + " " + surname;
+        Account userAcc = choice.equals("1") ? handleLogin(scanner) : handleRegister(scanner);
 
-        // PIN Setup
-        String userPin = "";
-        do {
-            System.out.print("Create 4-digit PIN: ");
-            userPin = scanner.nextLine();
-        } while (userPin.length() != 4 || !userPin.matches("\\d+"));
-
-        // Account Creation
-        Account myMainAccount = new Account(fullName, generateID(), "Main");
-        Account mySavingsAccount = null;
-
-        System.out.print("\nOpen a Savings account? (yes/no): ");
-        if (scanner.nextLine().equalsIgnoreCase("yes")) {
-            mySavingsAccount = new Account(fullName, generateID(), "Savings");
+        if (userAcc != null) {
+            runMenu(scanner, userAcc);
         }
-
-        // THE ATM MENU
-        boolean isRunning = true;
-        while (isRunning) {
-            System.out.println("\n--- ATM MAIN MENU ---");
-            System.out.println("1. Check Balances");
-            System.out.println("2. Deposit Money (Main)");
-            System.out.println("3. Withdraw Money (Main)");
-            System.out.println("4. Print Last Transaction Slip (Main)"); // NEW OPTION
-            System.out.println("5. Exit");
-            System.out.print("Selection: ");
-            
-            String choice = scanner.nextLine();
-
-            if (choice.equals("1")) {
-                System.out.println("\n" + myMainAccount.getDetails());
-                if (mySavingsAccount != null) {
-                    System.out.println(mySavingsAccount.getDetails());
-                }
-            } 
-            else if (choice.equals("2")) {
-                System.out.print("Enter deposit amount: R");
-                try {
-                    double amount = Double.parseDouble(scanner.nextLine());
-                    myMainAccount.deposit(amount);
-                } catch (Exception e) {
-                    System.out.println("[ERROR] Invalid input. Use numbers only.");
-                }
-            } 
-            else if (choice.equals("3")) {
-                System.out.print("Enter withdrawal amount: R");
-                try {
-                    double amount = Double.parseDouble(scanner.nextLine());
-                    myMainAccount.withdraw(amount);
-                } catch (Exception e) {
-                    System.out.println("[ERROR] Invalid input. Use numbers only.");
-                }
-            }
-            else if (choice.equals("4")) {
-                
-                myMainAccount.printSlip();
-            }
-            else if (choice.equals("5")) {
-                System.out.println("Closing session. Goodbye, Pilato!");
-                isRunning = false;
-            } else {
-                System.out.println("[ERROR] Invalid selection. Please choose 1-5.");
-            }
-        }
+        System.out.println("Session Ended. Goodnight, Pilato!");
         scanner.close();
     }
 
-    public static String capitalizeAllWords(String str) {
-        if (str == null || str.isEmpty()) return str;
-        String[] words = str.split("\\s+");
-        StringBuilder sb = new StringBuilder();
-        for (String w : words) {
-            sb.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1).toLowerCase()).append(" ");
-        }
-        return sb.toString().trim();
+    private static Account handleLogin(Scanner sc) {
+        System.out.print("Account ID: "); String id = sc.nextLine();
+        System.out.print("PIN: "); String pin = sc.nextLine();
+        try (Scanner reg = new Scanner(new File(REGISTRY))) {
+            while (reg.hasNextLine()) {
+                String[] d = reg.nextLine().split(",");
+                if (d[0].equals(id) && d[1].equals(pin)) return new Account(d[2], id, "Main");
+            }
+        } catch (Exception e) { }
+        System.out.println("Invalid Credentials.");
+        return null;
     }
 
-    public static String generateID() {
-        lastAssignedNumber++;
-        return BRANCH_CODE + String.format("%02d", lastAssignedNumber);
+    private static Account handleRegister(Scanner sc) {
+        System.out.print("Full Name: "); String name = sc.nextLine();
+        System.out.print("Create 4-digit PIN: "); String pin = sc.nextLine();
+        String id = generateID();
+        try (PrintWriter out = new PrintWriter(new FileWriter(REGISTRY, true))) {
+            out.println(id + "," + pin + "," + name);
+        } catch (Exception e) { }
+        System.out.println("Registered! Your ID: " + id);
+        return new Account(name, id, "Main");
+    }
+
+    private static void runMenu(Scanner sc, Account acc) {
+        while (true) {
+            System.out.println("\n1. Balance\n2. Deposit\n3. Withdraw\n4. History\n5. Slip\n6. Exit");
+            System.out.print("Selection: ");
+            String c = sc.nextLine();
+            if (c.equals("1")) System.out.println(acc.getDetails());
+            else if (c.equals("2")) { System.out.print("R"); acc.deposit(Double.parseDouble(sc.nextLine())); }
+            else if (c.equals("3")) { System.out.print("R"); acc.withdraw(Double.parseDouble(sc.nextLine())); }
+            else if (c.equals("4")) acc.viewHistory();
+            else if (c.equals("5")) acc.printSlip();
+            else if (c.equals("6")) break;
+        }
+    }
+
+    private static String generateID() {
+        int last = 0;
+        try (Scanner s = new Scanner(new File("last_id.txt"))) { if (s.hasNextInt()) last = s.nextInt(); } catch (Exception e) { }
+        try (PrintWriter o = new PrintWriter(new FileWriter("last_id.txt"))) { o.print(last + 1); } catch (Exception e) { }
+        return BRANCH + String.format("%02d", last + 1);
     }
 }

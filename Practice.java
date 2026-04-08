@@ -15,7 +15,6 @@ public class Practice {
         System.out.println("how old are you?");
         int age = scanner.nextInt();
 
-
         System.out.println("hello " + name + "!");
         System.out.println("you are " + age + "years old");
         System.out.println("you live in " + location + ".");
