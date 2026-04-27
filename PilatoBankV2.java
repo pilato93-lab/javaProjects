@@ -1,5 +1,6 @@
 import java.util.Scanner;
 import java.io.*;
+import java.security.MessageDigest;
 
 public class PilatoBankV2 {
     private static final String BRANCH = "7443";
@@ -29,11 +30,47 @@ public class PilatoBankV2 {
         scanner.close();
     }
 
+    // Professional PIN Hashing Method
+    private static String hashPIN(String pin) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(pin.getBytes("UTF-8"));
+            StringBuilder hexString = new StringBuilder();
+            
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+            
+        } catch (Exception e) {
+            System.out.println("Security Error.");
+            return null;
+        }
+    }
+
+    // Professional Name Capitalization
+    private static String capitalizeName(String name) {
+        if (name == null || name.isEmpty()) return name;
+        String[] words = name.split("\\s+");
+        StringBuilder sb = new StringBuilder();
+        for (String word : words) {
+            if (word.length() > 0) {
+                sb.append(Character.toUpperCase(word.charAt(0)))
+                  .append(word.substring(1).toLowerCase())
+                  .append(" ");
+            }
+        }
+        return sb.toString().trim();
+    }
+
     private static Account handleLogin(String id, String pin) {
         try (Scanner reg = new Scanner(new File(REGISTRY))) {
             while (reg.hasNextLine()) {
                 String[] d = reg.nextLine().split(",");
-                if (d[0].equals(id) && d[1].equals(pin)) {
+                // Verify by hashing the input PIN and comparing to the stored hash
+                if (d[0].equals(id) && d[1].equals(hashPIN(pin))) {
                     double mainB = d.length > 3 ? Double.parseDouble(d[3]) : 0.0;
                     double saveB = d.length > 4 ? Double.parseDouble(d[4]) : 0.0;
                     return new Account(d[2], id, pin, mainB, saveB);
@@ -45,11 +82,19 @@ public class PilatoBankV2 {
     }
 
     private static Account handleRegister(Scanner sc) {
-        System.out.print("Full Name: "); String name = sc.nextLine();
-        System.out.print("Create 4-digit PIN: "); String pin = sc.nextLine();
+        System.out.print("Full Name: "); 
+        String rawName = sc.nextLine();
+        String name = capitalizeName(rawName); // Capitalizes the name automatically
+        
+        System.out.print("Create 4-digit PIN: "); 
+        String pin = sc.nextLine();
         String id = generateID();
+        
+        // Secure the PIN before saving
+        String securedPin = hashPIN(pin); 
+        
         try (PrintWriter out = new PrintWriter(new FileWriter(REGISTRY, true))) {
-            out.println(id + "," + pin + "," + name + ",0.0,0.0");
+            out.println(id + "," + securedPin + "," + name + ",0.0,0.0");
         } catch (Exception e) { }
         System.out.println("Registered! Your ID: " + id);
         return new Account(name, id, pin, 0.0, 0.0);
