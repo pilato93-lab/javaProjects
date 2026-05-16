@@ -1,23 +1,27 @@
-import java.time.Month;
+import java.util.Scanner;
 
 public class Hello {
 
-    public static void main(String[] args) {
+  public static void main(String[] args) {
+    
+  Scanner input = new Scanner(System.in);
 
-       String Name = "Philanie";
-       String Month = "September";
-       int year = 2026;
+  System.out.println("Hello User");
 
-       System.out.println("Hello " + Name + "!");
-       System.out.println("Welcome to java programming.");
-       System.out.println("your coding journey starts in " + year + "."); 
-       System.err.println("you are expected to complete in " + Month + " " + year + "."); 
-       System.out.println("Good luck " + Name + ".");
+  System.out.println("What is your name?");
+  String name = input.nextLine();
 
-       System.out.println(Name.toUpperCase());
-       System.out.println(Name.toLowerCase());
+  System.out.println("How old are you?");
+  int age = input.nextInt();
 
+  System.out.println("Welcome to java");
 
-        }
+  System.out.println("your name is " + name);
 
-    }
+  System.out.println("you are " + age + " years old");
+
+  input.close();
+
+  }
+
+}

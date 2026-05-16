@@ -154,6 +154,7 @@ public class PilatoBankV2 {
                 acc.transferFromSavings(Double.parseDouble(sc.nextLine()));
             }
             else if (c.equals("4")) break;
+
         }
     }
 
@@ -162,5 +163,6 @@ public class PilatoBankV2 {
         try (Scanner s = new Scanner(new File("last_id.txt"))) { if (s.hasNextInt()) last = s.nextInt(); } catch (Exception e) { }
         try (PrintWriter o = new PrintWriter(new FileWriter("last_id.txt"))) { o.print(last + 1); } catch (Exception e) { }
         return BRANCH + String.format("%02d", last + 1);
+        
     }
 }
