@@ -9,3 +9,6 @@
 [2026-05-23 01:13:56] Withdraw: -R200.0 | Balance: R1800.0
 [2026-05-23 01:20:21] Deposit: +R1000.0 | Balance: R2800.0
 [2026-05-23 01:20:43] Withdraw: -R350.0 | Balance: R2450.0
+[2026-05-24 00:04:57] Deposit: +R600.0 | Balance: R3050.0
+[2026-05-24 00:06:02] Withdraw: -R550.0 | Balance: R2500.0
+[2026-05-25 22:55:15] Withdraw: -R550.0 | Balance: R1950.0
