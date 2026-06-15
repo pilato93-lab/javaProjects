@@ -10,6 +10,16 @@ public class DatabaseConnection {
     private static Connection connection = null;
 
     public static Connection getConnection() {
+        // THE FIX: Check if a connection exists but was closed by a DAO.
+        // If it is closed, reset it to null so the original code below triggers perfectly.
+        try {
+            if (connection != null && connection.isClosed()) {
+                connection = null;
+            }
+        } catch (SQLException e) {
+            connection = null; // Fallback reset if checking fails
+        }
+
         if (connection == null) {
             try {
                 // 1. Create a Properties object to hold the keys

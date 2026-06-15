@@ -2,64 +2,55 @@ package org.example;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class ClientDAO {
 
-    public boolean registerClient(Client client) {
-        String sql = "INSERT INTO clients (account_number, first_name, last_name, hashed_pin, balance) VALUES (?, ?, ?, ?, ?)";
+   //Fetching client from the database using their account number
+    public Client getClientByAccountNumber(String accountNumber) {
+        String query = "SELECT * FROM clients WHERE account_number = ?";
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-            pstmt.setString(1, client.getAccountNumber());
-            pstmt.setString(2, client.getFirstName());
-            pstmt.setString(3, client.getLastName());
-            pstmt.setString(4, client.getPin());
-            pstmt.setDouble(5, client.getBalance());
+            pstmt.setString(1, accountNumber);
 
-            // Execute the insert statement
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    Client client = new Client("", "", "", "", 0.0);
+                    client.setAccountNumber(rs.getString("account_number"));
+                    client.setFirstName(rs.getString("first_name"));
+                    client.setLastName(rs.getString("last_name"));
+                    client.setPin(rs.getString("hashed_pin"));
+                    client.setBalance(rs.getDouble("balance"));
+                    return client;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("❌ Database Error: Could not retrieve client details.");
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    //Updating client's balance in the database
+    public boolean updateBalance(String accountNumber, double newBalance) {
+        String query = "UPDATE clients SET balance = ? WHERE account_number = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(query)) {
+
+            pstmt.setDouble(1, newBalance);
+            pstmt.setString(2, accountNumber);
+
             int rowsAffected = pstmt.executeUpdate();
             return rowsAffected > 0;
 
         } catch (SQLException e) {
-            System.out.println("❌ [DATABASE ERROR] Registration failed!");
-            e.printStackTrace();
+           System.out.println("❌ Database Error: Could not update balance.");
+          e.printStackTrace();
             return false;
         }
     }
-
-        public Client getClientByAccountNumber (String accountNumber){
-            String sql = "SELECT * FROM clients WHERE account_number = ?";
-
-            try (Connection conn = DatabaseConnection.getConnection();
-                 PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-                // 1. Put the account number the user typed into the SQL command
-                pstmt.setString(1, accountNumber);
-
-                // 2. Run the search query and store the results table
-                try (java.sql.ResultSet rs = pstmt.executeQuery()) {
-
-                    // 3. If the database found a matching row...
-                    if (rs.next()) {
-                        // Create and return a complete Client object using the data from the columns
-                        return new Client(
-                                rs.getString("account_number"),
-                                rs.getString("first_name"),
-                                rs.getString("last_name"),
-                                rs.getString("hashed_pin"),
-                                rs.getDouble("balance")
-                        );
-                    }
-                }
-
-            } catch (java.sql.SQLException e) {
-                System.out.println("❌ [DATABASE ERROR] Failed to search for account: " + accountNumber);
-                e.printStackTrace();
-            }
-
-            // If no match was found, or an error happened, return nothing
-            return null;
-        }
-    }
+ }
