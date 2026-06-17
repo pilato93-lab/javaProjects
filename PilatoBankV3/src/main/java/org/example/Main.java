@@ -1,11 +1,13 @@
 package org.example;
 
 import java.util.Scanner;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         ClientDAO clientDAO = new ClientDAO();
+        TransactionDAO transactionDAO = new TransactionDAO(); // handles logging
 
         System.out.println("=================================");
         System.out.println("    WELCOME TO PILATO BANK V3    ");
@@ -39,8 +41,9 @@ public class Main {
             System.out.println("1. Check Account Balance");
             System.out.println("2. Deposit Funds");
             System.out.println("3. Withdraw Funds");
-            System.out.println("4. Exit Session");
-            System.out.print("Select an option (1-4): ");
+            System.out.println("4. View Transaction History");
+            System.out.println("5. Exit Session");
+            System.out.print("Select an option (1-5): ");
 
             int choice = input.nextInt();
             input.nextLine();
@@ -60,6 +63,8 @@ public class Main {
 
                         if (clientDAO.updateBalance(client.getAccountNumber(), newBalance)) {
                             client.setBalance(newBalance);
+                            transactionDAO.logTransaction(client.getAccountNumber(), depositAmount, "DEPOSIT");
+
                             System.out.println("✅ Deposit successful!");
                             System.out.println("💰 Updated Balance: R" + client.getBalance());
                         } else {
@@ -93,6 +98,8 @@ public class Main {
 
                         if (clientDAO.updateBalance(client.getAccountNumber(), newBalance)) {
                             client.setBalance(newBalance);
+                            transactionDAO.logTransaction(client.getAccountNumber(), withdrawAmount, "WITHDRAWAL");
+
                             System.out.println("💸 Dispensing cash... Please collect your money.");
                             System.out.println("✅ Withdrawal successful!");
                             System.out.println("💰 Remaining Balance: R" + client.getBalance());
@@ -105,12 +112,24 @@ public class Main {
                     break;
 
                 case 4:
+                    System.out.println("\n--- TRANSACTION HISTORY ---");
+                    List<String> history = transactionDAO.getTransactions(client.getAccountNumber());
+                    if (history.isEmpty()) {
+                        System.out.println("No transactions found.");
+                    } else {
+                        for (String entry : history) {
+                            System.out.println(entry);
+                        }
+                    }
+                    break;
+
+                case 5:
                     System.out.println("\n👋 Thank you for using Pilato Bank. Stay safe!");
                     exit = true;
                     break;
 
                 default:
-                    System.out.println("❌ Invalid choice. Please select a valid option from the menu.");
+                    System.out.println("❌ Invalid choice. Please select a valid option (1-5).");
             }
         }
         input.close();
