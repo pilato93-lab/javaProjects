@@ -1,11 +1,14 @@
 package org.example;
 
 import java.util.Scanner;
+import java.util.Locale;
 import java.util.List;
+
 
 public class Main {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
+        input.useLocale(Locale.US);
         ClientDAO clientDAO = new ClientDAO();
         TransactionDAO transactionDAO = new TransactionDAO(); // handles logging
 
@@ -34,6 +37,8 @@ public class Main {
         }
 
         System.out.println("\n✅ Login Successful! Welcome back, " + client.getFirstName() + " " + client.getLastName());
+
+        ServiceTester.runIntegrityChecks(client);
 
         boolean exit = false;
         while (!exit) {
