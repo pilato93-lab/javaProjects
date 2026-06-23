@@ -39,8 +39,7 @@ public class Main {
             return;
         }
 
-        System.out.println("\n✅ Login Successful! Welcome back, " + client.getFirstName() + " " + client.getLastName());
-
+        System.out.println("Login Successful! Welcome back, " + client.getName() + " [" + client.getAccountType() + " ACCOUNT]");
         ServiceTester.runIntegrityChecks(client);
 
         boolean exit = false;

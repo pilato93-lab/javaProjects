@@ -24,6 +24,7 @@ public class ClientDAO {
                     client.setLastName(rs.getString("last_name"));
                     client.setPin(rs.getString("hashed_pin"));
                     client.setBalance(rs.getDouble("balance"));
+                    client.setAccountType(rs.getString("account_type"));
                     return client;
                 }
             }

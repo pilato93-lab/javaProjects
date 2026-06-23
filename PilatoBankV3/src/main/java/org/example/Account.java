@@ -6,17 +6,19 @@ public class Account {
     private String name;
     private double balance;
     private String pin;
+    private String accountType; // Savings or Current
 
     // 2. Default Constructor (Required by enterprise frameworks)
     public Account() {
     }
 
     // 3. Parameterized Constructor (To easily create account objects in code)
-    public Account(String accountNumber, String name, double balance, String pin) {
+    public Account(String accountNumber, String name, double balance, String pin, String accountType) {
         this.accountNumber = accountNumber;
         this.name = name;
         this.balance = balance;
         this.pin = pin;
+        this.accountType = accountType;
     }
 
     // 4. Getters and Setters (The security gates for reading/writing data)
@@ -52,6 +54,14 @@ public class Account {
         this.pin = pin;
     }
 
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
+    }
+
     // 5. toString() Method (For easy printing and debugging in the terminal)
     @Override
     public String toString() {
@@ -59,6 +69,7 @@ public class Account {
                 "accountNumber='" + accountNumber + '\'' +
                 ", name='" + name + '\'' +
                 ", balance=" + balance +
+                ", accountType='" + accountType + '\'' +
                 '}';
     }
 }

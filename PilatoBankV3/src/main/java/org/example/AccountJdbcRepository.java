@@ -7,7 +7,8 @@ public class AccountJdbcRepository implements AccountRepository {
 
     @Override
     public void save(Account account) {
-        String sql = "INSERT INTO clients (account_number, first_name, balance, hashed_pin) VALUES (?, ?, ?, ?)";
+        // ADDED account_type
+        String sql = "INSERT INTO clients (account_number, first_name, balance, hashed_pin, account_type) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -15,8 +16,9 @@ public class AccountJdbcRepository implements AccountRepository {
             stmt.setString(2, account.getName());
             stmt.setDouble(3, account.getBalance());
             stmt.setString(4, account.getPin());
+            stmt.setString(5, account.getAccountType()); // Mapping the account type
             stmt.executeUpdate();
-            System.out.println("[DATABASE] Account successfully saved via Repository!");
+            System.out.println("[DATABASE] Account successfully saved with type: " + account.getAccountType());
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -32,11 +34,13 @@ public class AccountJdbcRepository implements AccountRepository {
             stmt.setString(1, accountNumber);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
+                    // Added account_type retrieval to the constructor
                     Account account = new Account(
                             rs.getString("account_number"),
                             rs.getString("first_name"),
                             rs.getDouble("balance"),
-                            rs.getString("hashed_pin")
+                            rs.getString("hashed_pin"),
+                            rs.getString("account_type")
                     );
                     return Optional.of(account);
                 }

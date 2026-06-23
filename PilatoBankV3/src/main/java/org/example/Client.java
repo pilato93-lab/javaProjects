@@ -10,6 +10,7 @@ public class Client {
     private String pin;
     private double balance;
     private Timestamp createdAt;
+    private String accountType; // Added for V3 database tracking
 
     public Client(String accountNumber, String firstName, String lastName, String pin, double balance) {
         this.accountNumber = accountNumber;
@@ -39,4 +40,17 @@ public class Client {
 
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
+    }
+
+    public String getName() {
+        return firstName + " " + lastName;
+    }
 }
