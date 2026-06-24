@@ -7,14 +7,11 @@ public class SecurityUtils {
 
     public static String hashPin(String rawPin) {
         try {
-
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
             byte[] encodedHash = digest.digest(rawPin.getBytes(StandardCharsets.UTF_8));
 
             StringBuilder hexString = new StringBuilder();
             for (byte b : encodedHash) {
-
                 String hex = Integer.toHexString(0xff & b);
                 if (hex.length() == 1) {
                     hexString.append('0');
@@ -22,9 +19,14 @@ public class SecurityUtils {
                 hexString.append(hex);
             }
             return hexString.toString();
-
         } catch (Exception e) {
             throw new RuntimeException("Error: Hashing algorithm failed.", e);
         }
+    }
+
+    // New method to compare input PIN with the stored hash
+    public static boolean verifyPin(String rawPin, String hashedPinFromDb) {
+        String hashedInput = hashPin(rawPin);
+        return hashedInput.equals(hashedPinFromDb);
     }
 }
