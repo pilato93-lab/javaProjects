@@ -3,6 +3,7 @@ package org.example;
 import java.util.Scanner;
 import java.util.Locale;
 import java.util.List;
+import java.util.InputMismatchException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -52,8 +53,15 @@ public class Main {
             System.out.println("5. Exit Session");
             System.out.print("Select an option (1-5): ");
 
-            int choice = input.nextInt();
-            input.nextLine();
+            int choice = 0;
+            try {
+                choice = input.nextInt();
+                input.nextLine();
+            } catch (InputMismatchException e) {
+                System.out.println("❌ Invalid input. Please enter a valid number (1-5).");
+                input.nextLine();
+                continue; // Restart the loop to show the menu again
+            }
 
             switch (choice) {
                 case 1:
@@ -62,8 +70,15 @@ public class Main {
 
                 case 2:
                     System.out.print("\nEnter amount to deposit: R");
-                    double depositAmount = input.nextDouble();
-                    input.nextLine();
+                    double depositAmount = 0;
+                    try {
+                        depositAmount = input.nextDouble();
+                        input.nextLine();
+                    } catch (InputMismatchException e) {
+                        System.out.println("❌ Invalid amount. Please enter numbers only.");
+                        input.nextLine();
+                        break;
+                    }
 
                     if (depositAmount > 0) {
                         double newBalance = client.getBalance() + depositAmount;
@@ -84,8 +99,15 @@ public class Main {
 
                 case 3:
                     System.out.print("\nEnter amount to withdraw: R");
-                    double withdrawAmount = input.nextDouble();
-                    input.nextLine();
+                    double withdrawAmount = 0;
+                    try {
+                        withdrawAmount = input.nextDouble();
+                        input.nextLine();
+                    } catch (InputMismatchException e) {
+                        System.out.println("❌ Invalid amount. Please enter numbers only.");
+                        input.nextLine();
+                        break;
+                    }
 
                     if (withdrawAmount <= 0) {
                         System.out.println("❌ Invalid amount. Withdrawal must be greater than R0.");
